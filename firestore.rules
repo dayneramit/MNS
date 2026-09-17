@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Tanks Collection: Telemetry data read by fleet users, writes permitted for depot operations
+    match /tanks/{tankId} {
+      allow read: if true;
+      allow create, update: if isSignedIn() && isValidId(tankId)
+        && request.resource.data.capacityLiters is number
+        && request.resource.data.currentLiters is number;
+      allow delete: if false;
+    }
+
+    // Vehicles Collection: Fleet registry
+    match /vehicles/{vehicleId} {
+      allow read: if true;
+      allow create, update: if isSignedIn() && isValidId(vehicleId)
+        && request.resource.data.plateNumber is string
+        && request.resource.data.dailyQuotaLiters is number;
+      allow delete: if false;
+    }
+
+    // Transactions Collection: Fuel slips and telemetry reconciliation
+    match /transactions/{transactionId} {
+      allow read: if true;
+      allow create, update: if isValidId(transactionId)
+        && request.resource.data.litersDispensed is number
+        && request.resource.data.plateNumber is string;
+      allow delete: if false; // Immutable audit log
+    }
+
+    // Fuel Requests Collection: Driver fuel requests and dispatch approvals
+    match /requests/{requestId} {
+      allow read: if true;
+      allow create, update: if isValidId(requestId)
+        && request.resource.data.plateNumber is string
+        && request.resource.data.requestedLiters is number;
+      allow delete: if false;
+    }
+
+    // Timeline Events: Real-time event tracking
+    match /timeline/{eventId} {
+      allow read: if true;
+      allow create, update: if isValidId(eventId)
+        && request.resource.data.stage is string
+        && request.resource.data.timestamp is string;
+      allow delete: if false;
+    }
+
+    // Audit Logs: System AutoLogs
+    match /logs/{logId} {
+      allow read: if true;
+      allow create, update: if isValidId(logId)
+        && request.resource.data.category is string
+        && request.resource.data.action is string;
+      allow delete: if false;
+    }
+  }
+}

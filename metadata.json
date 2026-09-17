@@ -1,0 +1,6 @@
+{
+  "name": "POST LINK | Industrial Fleet Fuel Management",
+  "description": "NC SMART CONTROL - Intelligent Industrial Control Platform for private fleet fueling, depot telemetry, remote solenoid interlocks, and automated QR workflows.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

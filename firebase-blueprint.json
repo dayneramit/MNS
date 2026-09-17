@@ -1,0 +1,156 @@
+{
+  "entities": {
+    "TankTelemetry": {
+      "title": "TankTelemetry",
+      "description": "Bulk diesel storage tank telemetry and level transmitter readings at the industrial depot",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "name": { "type": "string", "maxLength": 128 },
+        "fuelType": { "type": "string", "maxLength": 64 },
+        "capacityLiters": { "type": "number" },
+        "currentLiters": { "type": "number" },
+        "temperatureC": { "type": "number" },
+        "waterBottomMm": { "type": "number" },
+        "densityKgM3": { "type": "number" },
+        "flowRateLpm": { "type": "number" },
+        "status": { "type": "string", "enum": ["normal", "low", "reorder", "filling"] },
+        "lastReplenished": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "name", "fuelType", "capacityLiters", "currentLiters", "status"]
+    },
+    "FleetVehicle": {
+      "title": "FleetVehicle",
+      "description": "Registered company fleet commercial truck with driver assignment and fuel quotas",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "plateNumber": { "type": "string", "maxLength": 64 },
+        "vehicleType": { "type": "string", "maxLength": 128 },
+        "model": { "type": "string", "maxLength": 128 },
+        "assignedDriver": { "type": "string", "maxLength": 128 },
+        "driverId": { "type": "string", "maxLength": 64 },
+        "department": { "type": "string", "maxLength": 128 },
+        "dailyQuotaLiters": { "type": "number" },
+        "todayDispensedLiters": { "type": "number" },
+        "tankCapacityLiters": { "type": "number" },
+        "avgKmL": { "type": "number" },
+        "lastOdometerKm": { "type": "number" },
+        "qrStatus": { "type": "string", "enum": ["active", "expired", "suspended"] },
+        "status": { "type": "string", "enum": ["ready", "fueling", "on_route", "maintenance"] }
+      },
+      "required": ["id", "plateNumber", "vehicleType", "assignedDriver", "driverId", "dailyQuotaLiters"]
+    },
+    "FuelTransaction": {
+      "title": "FuelTransaction",
+      "description": "Approved and dispensed fueling transaction slip record for audit reconciliation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "plateNumber": { "type": "string", "maxLength": 64 },
+        "vehicleType": { "type": "string", "maxLength": 128 },
+        "driverName": { "type": "string", "maxLength": 128 },
+        "driverId": { "type": "string", "maxLength": 64 },
+        "litersDispensed": { "type": "number" },
+        "tankId": { "type": "string", "maxLength": 64 },
+        "bayId": { "type": "string", "maxLength": 64 },
+        "odometerKm": { "type": "number" },
+        "approvalCode": { "type": "string", "maxLength": 64 },
+        "approvedBy": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["completed", "flagged_anomaly", "in_progress"] },
+        "kmPerLiterEfficiency": { "type": "number" },
+        "notes": { "type": "string", "maxLength": 512 }
+      },
+      "required": ["id", "timestamp", "plateNumber", "driverName", "litersDispensed", "tankId", "bayId", "status"]
+    },
+    "FuelRequest": {
+      "title": "FuelRequest",
+      "description": "Driver fuel request with dynamic QR and dispatch approval status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "vehicleId": { "type": "string", "maxLength": 64 },
+        "plateNumber": { "type": "string", "maxLength": 64 },
+        "driverName": { "type": "string", "maxLength": 128 },
+        "driverId": { "type": "string", "maxLength": 64 },
+        "requestedLiters": { "type": "number" },
+        "odometerKm": { "type": "number" },
+        "tankId": { "type": "string", "maxLength": 64 },
+        "qrToken": { "type": "string", "maxLength": 128 },
+        "qrExpiresAt": { "type": "string", "maxLength": 64 },
+        "status": { "type": "string", "enum": ["pending_approval", "approved", "dispensing", "completed", "rejected"] },
+        "approvedLiters": { "type": "number" },
+        "approvedBy": { "type": "string", "maxLength": 128 },
+        "approvedAt": { "type": "string", "maxLength": 64 },
+        "rejectionReason": { "type": "string", "maxLength": 256 }
+      },
+      "required": ["id", "timestamp", "vehicleId", "plateNumber", "driverName", "requestedLiters", "status"]
+    },
+    "AutoTimelineEvent": {
+      "title": "AutoTimelineEvent",
+      "description": "Real-time event marker in fleet fueling lifecycle",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "timeFormatted": { "type": "string", "maxLength": 32 },
+        "stage": { "type": "string", "enum": ["GATE_ARRIVAL", "QR_REQUEST", "DISPATCH_APPROVAL", "SOLENOID_DISPENSE", "STOCK_SYNC", "AUDIT_LOG"] },
+        "titleEn": { "type": "string", "maxLength": 128 },
+        "titleTh": { "type": "string", "maxLength": 128 },
+        "descriptionEn": { "type": "string", "maxLength": 256 },
+        "descriptionTh": { "type": "string", "maxLength": 256 },
+        "plateNumber": { "type": "string", "maxLength": 64 },
+        "driverName": { "type": "string", "maxLength": 128 },
+        "actor": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "enum": ["completed", "in_progress", "pending", "alert"] }
+      },
+      "required": ["id", "timestamp", "stage", "titleEn", "titleTh", "status"]
+    },
+    "AutoLogEntry": {
+      "title": "AutoLogEntry",
+      "description": "Continuous auto-save audit trail record of all system events and transactions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 64 },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "category": { "type": "string", "enum": ["AUTO_SAVE", "REQUEST", "APPROVAL", "DISPENSE", "INVENTORY", "SECURITY", "SYSTEM"] },
+        "level": { "type": "string", "enum": ["INFO", "SUCCESS", "WARN", "ERROR"] },
+        "action": { "type": "string", "maxLength": 128 },
+        "actor": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["driver", "admin", "iot_gateway", "system"] },
+        "details": { "type": "string", "maxLength": 512 },
+        "savedToCloud": { "type": "boolean" },
+        "cloudDocId": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "timestamp", "category", "level", "action", "actor", "role", "details"]
+    }
+  },
+  "firestore": {
+    "/tanks/{tankId}": {
+      "schema": { "$ref": "#/entities/TankTelemetry" },
+      "description": "Depot bulk storage tank records and live level data"
+    },
+    "/vehicles/{vehicleId}": {
+      "schema": { "$ref": "#/entities/FleetVehicle" },
+      "description": "Commercial fleet vehicles authorized for depot fueling"
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/FuelTransaction" },
+      "description": "Historical and live fuel dispensing transaction records"
+    },
+    "/requests/{requestId}": {
+      "schema": { "$ref": "#/entities/FuelRequest" },
+      "description": "Driver fuel requests and central dispatch authorizations"
+    },
+    "/timeline/{eventId}": {
+      "schema": { "$ref": "#/entities/AutoTimelineEvent" },
+      "description": "Real-time fleet activity journey timeline events"
+    },
+    "/logs/{logId}": {
+      "schema": { "$ref": "#/entities/AutoLogEntry" },
+      "description": "Central continuous audit logs automatically saved to Firestore"
+    }
+  }
+}
